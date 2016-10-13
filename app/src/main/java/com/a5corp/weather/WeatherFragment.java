@@ -16,6 +16,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.a5corp.weather.model.CitySearch;
+import com.a5corp.weather.model.Weather;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -36,12 +38,16 @@ public class WeatherFragment extends Fragment {
     JSONObject json0 , json1;
     int Clicks = 0;
     MaterialDialog pd;
+    Weather mWeather;
+    CitySearch mCitySearch;
+    ConnectionDetector mConnectionDetector;
+    boolean isNetworkAvailable;
 
     private void updateWeatherData(final String city) {
         new Thread(){
             public void run(){
                 final JSONObject[] json = RemoteFetch.getJSON(getActivity(), city);
-                if(json == null) {
+                if(json == null || !isNetworkAvailable) {
                     GlobalActivity.i = -1;
                     GlobalActivity.cp.setCity(GlobalActivity.cp.getLastCity());
                     handler.post(new Runnable(){
@@ -457,6 +463,10 @@ public class WeatherFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        mWeather = new Weather();
+        mCitySearch = new CitySearch();
+        mConnectionDetector = new ConnectionDetector(getActivity());
+        isNetworkAvailable = mConnectionDetector.isNetworkAvailableAndConnected();
         MaterialDialog.Builder builder = new MaterialDialog.Builder(this.getActivity())
                 .title("Please Wait")
                 .content("Loading")
